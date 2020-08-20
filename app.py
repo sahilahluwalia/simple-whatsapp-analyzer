@@ -279,15 +279,15 @@ if uploaded_file is not None:
 
 
     st.dataframe(data)
+
+#  functions to add
+#   per day analysis 
+#   create function for displaying weeks day msg distribution
+#   normal 1 person option
+#   graph of whole msg in year
+
 else:
     st.header("Upload file to continue")
 
-''' functions to add
-    per day analysis 
-    create function for displaying weeks day msg distribution
-    normal 1 person option
-    graph of whole msg in year
-
-'''
 if __name__=='__main__':
     main()
