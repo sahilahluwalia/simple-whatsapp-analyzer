@@ -22,7 +22,7 @@ Heroku ready
 
 #### functions to add
 
-- per day analysis 
+-  ~~per day analysis~~ 
 
 -   create function for displaying msg distribution on days
 

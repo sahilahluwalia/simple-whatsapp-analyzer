@@ -9,14 +9,43 @@ import streamlit as st
 
 def main():
     ''' common explorer '''
-st.beta_set_page_config(page_title="Ex-stream-ly Cool App",page_icon="🧊",initial_sidebar_state="expanded",)
+st.beta_set_page_config(page_title="Ex-stream-ly Cool App",page_icon="🧊")
 
-st.title('Whatsapp Group Chat Analysis')
+
+
+st.sidebar.header("How to use?")
+st.sidebar.markdown(''' - Open the group chat. 
+    - (Individual works but it is little-bit buggy) 
+- Tap More options > More > Export chat.
+- Choose to export without media.
+- Upload .txt file on Website
+- See magic''')
+st.sidebar.header("About")
+st.sidebar.markdown("Simple Whatsapp Chat Analyser To visualize hidden secrets of your chats")
+
+st.sidebar.title("Contribute")
+st.sidebar.info(
+        "This an open source project and you can find source code [here](https://github.com/sahilahluwalia/simple-whatsapp-analyzer)."
+    )
+#st.sidebar.write("s"(escape=False, index=False), unsafe_allow_html=True)
+
+st.sidebar.markdown(
+        """
+        This app is maintained by Sahil Ahluwalia.
+        [email](mailto:iamsahilahluwalia@gmail.com)
+        
+"""
+    )
+
+
+
+
+st.title('Whatsapp Chat Analyzer')
 st.subheader("Simple Data Explorer")
 #st.markdown('Analysis on Whatsapp chats of users.')
 st.set_option('deprecation.showfileUploaderEncoding', False)
 
-uploaded_file = st.file_uploader("Upload Your Whatsapp Chat.", type="txt")
+uploaded_file = st.file_uploader("Upload Your Whatsapp Chat Below.", type="txt")
 
 st.info("Beta release")
 
@@ -134,7 +163,47 @@ if uploaded_file is not None:
     #print(df.head())
     st.balloons()
 
+    
+    
+    ##average 
+    
+    
+    #http_df = df[df['message'] == ' https']
+    
+    ## converting media message into variable
+    media_messages_df=df[df['message']==' <Media omitted>']
+    nonmedia_messages_df = df.drop(media_messages_df.index)
+    #print(media_messages_df)
+    ## total media messages
+    #print("Total Media")
+    #print(media_messages_df['message'].count())
+    nonmedia_messages_df['letter_count'] = nonmedia_messages_df['message'].apply(lambda s : len(s) -1)
+    nonmedia_messages_df['word_count'] = nonmedia_messages_df['message'].apply(lambda s : len(s.split(" ")) -1)
 
+    ##average amount of media sent on 1 day
+    avgmediamessage=int(media_messages_df['message'].count()/df['date'].nunique())
+    
+    ##average amount of message counts sent on 1 day
+    avgmessage=int(df.shape[0]/df['date'].nunique() )
+
+    ##average amount of word counts sent on 1 day
+    avgword=int(nonmedia_messages_df['word_count'].sum()/df['date'].nunique() )
+    
+    ##average amount of letter counts sent on 1 day
+    avgletter=int(nonmedia_messages_df['letter_count'].sum()/df['date'].nunique())
+
+    row=["Average Daily Media Messages","Average Daily Messages","Average Daily Word Count","Average Daily Letter Count",]
+
+    col=[avgmediamessage,avgmessage,avgword,avgletter]
+    
+    avgdata=pd.DataFrame(col,row)
+    #plt.figure(figsize=(10,10))
+
+    avgdata=avgdata.rename({0:"Average Numbers"},axis=1)
+    st.subheader("Average Stats")
+
+
+    st.table(avgdata)
 
 
 
@@ -147,22 +216,24 @@ if uploaded_file is not None:
     st.subheader("Top 10 active days")
     plt.xticks(rotation=30)
     plt.title("Top 10 active days")
-    plt.xlabel("Dates")
-    plt.ylabel("Number of messages")
+    plt.xlabel("Number of messages")
+    plt.ylabel("Dates")
     #plt.
-    plt.plot(df['date'].value_counts().head(10),linewidth=3,color='green',marker='o',linestyle='-')
+    #plt.plot(df['date'].value_counts().head(10),linewidth=3,color='green',marker='o',linestyle='-')
+    chart=df['date'].value_counts().head(10)
+    chart.plot.barh()
     st.pyplot()
 
 
     #top 10 authors
     df['author'].value_counts().head(10)
-    st.subheader("Top 10 Authors")
+    st.subheader("Top 10 Contributors")
     #figure(num=None, figsize=(12, 6), dpi=80, facecolor='w', edgecolor='k')
     #plt.figure(figsize=(len(combination)*0.25,10))
     plt.xticks(rotation=30)
-    plt.title("Top 10 Active Authors")
-    plt.xlabel("Amount of Messages")
-    plt.ylabel("Authors")
+    plt.title("Top 10 Active Contributors")
+    plt.xlabel("Number of Messages")
+    plt.ylabel("Contributors")
     axes= plt.axes()
     axes.grid()
 
@@ -174,15 +245,17 @@ if uploaded_file is not None:
 
     # Top 10 Messages
     st.subheader("Top 10 Messages")
-    media_messages_df = df[df['message'] == ' <Media omitted>']
-    #http_df = df[df['message'] == ' https']
-    nonmedia_messages_df = df.drop(media_messages_df.index)
+    
+    ## this section is on upper side used in average section
+    
+    http_df=df[df['message']==' https']
+    nonmedia_messages_df = nonmedia_messages_df.drop(http_df.index)
     #nonmedia_messages_df = df.drop(http_df.index)
     #nonmedia_messages_df
     plt.title("Top 10 Messages")
     plt.xlabel("Times")
     plt.ylabel("Number of messages")
-
+    
     axes= plt.axes()
     axes.grid()
     plt.xticks(rotation=30)
@@ -199,20 +272,33 @@ if uploaded_file is not None:
     nonmedia_messages_df['word_count'] = nonmedia_messages_df['message'].apply(lambda s : len(s.split(" ")) -1)
 
     #"Top 10 Talkative Authors"
-    st.subheader("Top 10 Talkative Authors who writes long messages")
+    st.subheader("Top 10 Talkative Members")
     total_word_count_grouped_by_author = nonmedia_messages_df[['author', 'word_count']].groupby('author').sum()
     sorted_total_word_count_grouped_by_author = total_word_count_grouped_by_author.sort_values('word_count', ascending=False)
     top_10_sorted_total_word_count_grouped_by_author = sorted_total_word_count_grouped_by_author.head(10)
     top_10_sorted_total_word_count_grouped_by_author.plot.barh()
 
-    plt.title("Top 10 Talkative Authors")
+    
+    plt.title("Top 10 Talkative Members")
     plt.xlabel('Number of Words')
-    plt.ylabel('Authors')
+    plt.ylabel('Members')
 
+    st.pyplot()
+    
+    
+    #"Top 10 meme Authors"
+    st.subheader("Top 10 Meme lords")
+    total_mediamsg_grouped_by_author = media_messages_df['author'].value_counts().head(10)
+    total_mediamsg_grouped_by_author.plot.barh()
+
+    plt.title("Top 10 Media Message Contributors")
+    plt.xlabel('Number of Memes')
+    plt.ylabel('Memelord')
+    
     st.pyplot()
 
 
-    #"Top Frequency of letter counts in words "
+    #"Top Frequencies of letter counts in words "
     st.subheader("Top Frequency of letter counts in words")
     #plt.figure(figsize=(15, 20))
     #plt.yticks(rotation=90)
@@ -238,17 +324,10 @@ if uploaded_file is not None:
 
 
 
-    ## converting media message into variable
-    media_messages_df=df[df['message']==' <Media omitted>']
-    #print(media_messages_df)
-    ## total media messages
-    #print("Total Media")
-    #print(media_messages_df['message'].count())
-
+   
 
     ## TOTAL WORDS AND LETTERS
-    nonmedia_messages_df['letter_count'] = nonmedia_messages_df['message'].apply(lambda s : len(s) -1)
-    nonmedia_messages_df['word_count'] = nonmedia_messages_df['message'].apply(lambda s : len(s.split(" ")) -1)
+    
 
     #total words
     #print("Total Word Count")
@@ -268,26 +347,28 @@ if uploaded_file is not None:
     data=pd.DataFrame(col,row)
     #plt.figure(figsize=(10,10))
 
-    data=data.rename({0:"Numbers"},axis=1)
+    data=data.rename({0:"Total Numbers"},axis=1)
     st.subheader("Summary")
     ax = plt.gca()
     ax.get_xaxis().set_visible(False)
     ax.get_yaxis().set_visible(False)
     
     data.plot(table=True,ax=ax,color='green',marker='o',linewidth=2)
+    
+
+
+    st.table(data)
     st.pyplot()
-
-
-    st.dataframe(data)
-
 #  functions to add
-#   per day analysis 
+#   per day analysis #done
 #   create function for displaying weeks day msg distribution
 #   normal 1 person option
 #   graph of whole msg in year
 
 else:
-    st.header("Upload file to continue")
+    
+    st.subheader("upload .txt to continue")
+    st.markdown('''- You can read instructions on sidebar :) ''')
 
 if __name__=='__main__':
     main()
