@@ -4,9 +4,7 @@
 
 Simple chat analyzer to visualize chats into matplot charts in python
 
-
-
-
+[DEPLOYED LINK](https://simple-whatsapp-analyzer.herokuapp.com/)
 
 Things used
 
@@ -15,7 +13,6 @@ Things used
   - Streamlit
 
   - Matplotlib
-
 
 
 Heroku ready
